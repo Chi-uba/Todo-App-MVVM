@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="app/src/main/res/layout/activity_main.xml" value="0.18385416666666668" />
+        <entry key="app/src/main/res/layout/fragment_add_edit_todo_item.xml" value="0.1890625" />
+        <entry key="app/src/main/res/layout/fragment_edit_todo_item.xml" value="0.14" />
+        <entry key="app/src/main/res/layout/fragment_home.xml" value="0.1984375" />
+        <entry key="app/src/main/res/layout/home_screen.xml" value="0.2" />
+        <entry key="app/src/main/res/layout/todo_item_tile.xml" value="0.22" />
+        <entry key="app/src/main/res/menu/menu_fragment_todo_item.xml" value="0.24010416666666667" />
+      </map>
+    </option>
+  </component>
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="11" project-jdk-type="JavaSDK" />
+</project>

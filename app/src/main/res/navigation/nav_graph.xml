@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.chi_ubatodoapp.screen_fragment.home.HomeFragment"
+        android:label="List of Todo's"
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_homeFragment_to_addEditTodoItemFragment"
+            app:destination="@id/addEditTodoItemFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/addEditTodoItemFragment"
+        android:name="com.example.chi_ubatodoapp.screen_fragment.add_edit_todo_item.AddEditTodoItemFragment"
+        android:label="{title}"
+        tools:layout="@layout/fragment_add_edit_todo_item" >
+        <argument
+            android:name="todoItem"
+            app:argType="com.example.chi_ubatodoapp.data.TodoItem"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <argument
+            android:name="title"
+            app:argType="string" />
+    </fragment>
+</navigation>
