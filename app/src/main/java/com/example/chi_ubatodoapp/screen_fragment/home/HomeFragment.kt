@@ -31,6 +31,7 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class HomeFragment : Fragment(R.layout.fragment_home),HomeAdapter.OnItemClickListener {
 
+    //gets an instance of the HomeViewModel
     private val viewModel: HomeViewModel by viewModels()
 
     private lateinit var searchView : SearchView
@@ -43,15 +44,18 @@ class HomeFragment : Fragment(R.layout.fragment_home),HomeAdapter.OnItemClickLis
 
         val homeAdapter = HomeAdapter(this)
 
+        // binds recyclerview properties to their corresponding objects
         binding.apply {
             recyclerViewTodoItems.apply {
                 adapter = homeAdapter
                 layoutManager = LinearLayoutManager(requireContext())
+                // for optimization
                 setHasFixedSize(true)
             }
+            // a method that defines what happens when an item in recycler view is swiped left or right
             ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
                 0,
-                ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+                ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT // defines the swiping directions
             ) {
                 override fun onMove(
                     recyclerView: RecyclerView,
@@ -60,40 +64,47 @@ class HomeFragment : Fragment(R.layout.fragment_home),HomeAdapter.OnItemClickLis
                 ): Boolean {
                     return false
                 }
-
+                // calls a viewModel method that deletes the swiped item from database
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                     val task = homeAdapter.currentList[viewHolder.adapterPosition]
                     viewModel.onTodoItemSwiped(task)
                 }
-            }).attachToRecyclerView(recyclerViewTodoItems)
+            }).attachToRecyclerView(recyclerViewTodoItems) // connects the ItemTouchHelper
+            // method with recyclerView
 
+            // detects a click on the UI btn and calls a method defined in the viewModel to navigate to the edit screen with a null parameter
             fabCreateTodoItem.setOnClickListener {
                 viewModel.onAddNewTodoItemClick()
             }
         }
+
+        // recieves data sent from AddEditTodoItem fragment and calls a method from HomeViewModel that defines what happens next
             setFragmentResultListener("add_edit_request") { _, bundle ->
                 val result = bundle.getInt("add_edit_result")
                 viewModel.onAddEditResult(result)
             }
 
+        // observes the flow of todoItem list of livedata in the viewModel in order
+        // to automatically update the UI when there's an updated list
         viewModel.todoItem.observe(viewLifecycleOwner) {
             homeAdapter.submitList(it)
         }
 
+        // recieves events from the HomeViewModel and defines what action to be carried out based on the event received.
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.todoItemEvent.collect { event ->
                 when (event) {
-                    is HomeViewModel.TodoItemEvent.ShowUndoDeleteTaskMessage -> {
+                    is HomeViewModel.TodoItemEvent.ShowUndoDeleteTodoItemMessage -> {
                         Snackbar.make(requireView(), "Task deleted", Snackbar.LENGTH_LONG)
                             .setAction("UNDO") {
                                 viewModel.onUndoDeleteClick(event.todoItem)
                             }.show()
                     }
-                    is HomeViewModel.TodoItemEvent.NavigateToAddTaskScreen -> {
+                    is HomeViewModel.TodoItemEvent.NavigateToAddTodoItemScreen -> {
                         val action = HomeFragmentDirections.actionHomeFragmentToAddEditTodoItemFragment(null,"New Task")
                         findNavController().navigate(action)
                     }
-                    is HomeViewModel.TodoItemEvent.NavigateToEditTaskScreen -> {
+                    is HomeViewModel.TodoItemEvent.NavigateToEditTodoItemScreen -> {
                         val action = HomeFragmentDirections.actionHomeFragmentToAddEditTodoItemFragment(event.todoItem,"Edit Task")
                         findNavController().navigate(action)
                     }
@@ -104,53 +115,61 @@ class HomeFragment : Fragment(R.layout.fragment_home),HomeAdapter.OnItemClickLis
                 }.exhaustive
             }
         }
+        // enable a menu bar at the top of the Fragment
         setHasOptionsMenu(true)
-
     }
 
+    // calls a method in the HomeViewModel that defines what happens whan a todoItem is clicked
     override fun onItemClick(todoItem: TodoItem) {
         viewModel.onTodoItemSelected(todoItem)
     }
 
+    // calls a method in the HomeViewModel that updates the state of the isComplete check box
     override fun onCheckBoxClick(todoItem: TodoItem, isChecked: Boolean) {
         viewModel.onTodoItemCheckedChanged(todoItem, isChecked)
     }
 
-    // this inflates the option menu
+    // this inflates the option menu i.e converts the already defined xml layout to a useable object
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu_fragment_todo_item, menu)
 
+        // gets a reference to the search UI element in the menu
         val searchItem = menu.findItem(R.id.ic_search)
          searchView = searchItem.actionView as SearchView
 
+        // gets an instance of HomeViewModel searchQuery
         val savedQuery = viewModel.searchQuery.value
+
+        // checks if HomeViewModel searchQuery is not null and empty so as to expand the search view
         if (savedQuery != null && savedQuery.isNotEmpty()) {
             searchItem.expandActionView()
             searchView.setQuery(savedQuery, false)
         }
-        // updates the search view with latest typed in search keyword
+        // updates the HomeviewModel searchQuery with latest typed in search keyword
         searchView.onQueryTextChanged {
             viewModel.searchQuery.value = it
         }
+
         viewLifecycleOwner.lifecycleScope.launch {
             menu.findItem(R.id.hide_completed_tasks).isChecked =
-                viewModel.preferencesFlow.first().hideCompleted
+                viewModel.preferencesFlow.first().hideCompleted // used .first()
+        // rather than .collect() because we want to read from the flow once when the menu is created
         }
     }
-// defines the necessary action whem an item in the menu layout is selected
+// calls a method from the home viewmodel depending on the menu UI element clicked whem an item in the menu layout is selected
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when(item.itemId) {
-            // re-arranges the list of todoItems according to name alphabetically
+            // calls a method from the home viewModel that re-arranges the list of todoItems according to name alphabetically
             R.id.sort_by_name -> {
                 viewModel.onSortOrderSelected(SortOrder.BY_NAME)
                 true
             }
-            // re-arranges the list of todoItems according to date created
+            // calls a method from the home viewModel that re-arranges the list of todoItems according to date created
             R.id.sort_by_date_created -> {
                 viewModel.onSortOrderSelected(SortOrder.BY_DATE)
                 true
             }
-            // hides completed tasks
+            // calls a method from the home viewModel that hides completed tasks
             R.id.hide_completed_tasks -> {
                 item.isChecked = !item.isChecked
                 viewModel.onHideCompletedClick(item.isChecked)
@@ -162,6 +181,7 @@ class HomeFragment : Fragment(R.layout.fragment_home),HomeAdapter.OnItemClickLis
     }
     override fun onDestroyView() {
         super.onDestroyView()
+        // removes listener to avoid sending empty string
         searchView.setOnQueryTextListener(null)
     }
     }

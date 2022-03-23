@@ -10,6 +10,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ChiubaToDoApp">
+        <!-- line-16 resizes the screen when a keyboard comes up -->
         <activity
             android:name=".MainActivity"
             android:windowSoftInputMode="adjustResize"

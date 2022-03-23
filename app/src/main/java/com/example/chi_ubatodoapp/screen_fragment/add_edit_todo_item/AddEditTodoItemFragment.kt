@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.collect
 @AndroidEntryPoint
 class AddEditTodoItemFragment : Fragment(R.layout.fragment_add_edit_todo_item) {
 
+    // creates an instance of the AddEditTodoItemViewModel
     private val viewModel: AddEditTodoItemViewModel by viewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -29,10 +30,11 @@ class AddEditTodoItemFragment : Fragment(R.layout.fragment_add_edit_todo_item) {
 
         val binding = FragmentAddEditTodoItemBinding.bind(view)
 
+        // binds UI element of AddEditTodoItemScreen to AddEditTodoItemViewModel variables
         binding.apply {
             editTextTodoItemName.setText(viewModel.todoItemName)
             checkboxTodoItemImportance.isChecked = viewModel.todoItemImportance
-            checkboxTodoItemImportance.jumpDrawablesToCurrentState()
+            checkboxTodoItemImportance.jumpDrawablesToCurrentState() // removes default animation for when checkbutton state changes
             textviewDateCreated.isVisible = viewModel.todoItem != null
             textviewDateCreated.text = "Created: ${viewModel.todoItem?.createdDateFormatted}"
 
@@ -49,7 +51,7 @@ class AddEditTodoItemFragment : Fragment(R.layout.fragment_add_edit_todo_item) {
             }
         }
 
-
+        // recieves events from the AddEditTodoItemViewModel and defines what action to be carried out based on the event received.
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.addEditTodoItemEvent.collect { event ->
                 when (event) {
@@ -58,6 +60,7 @@ class AddEditTodoItemFragment : Fragment(R.layout.fragment_add_edit_todo_item) {
                     }
                     is AddEditTodoItemViewModel.AddEditTodoItemEvent.NavigateBackWithResult -> {
                         binding.editTextTodoItemName.clearFocus()
+                        // sends event.result data to HomeFragments
                         setFragmentResult(
                             "add_edit_request",
                             bundleOf("add_edit_result" to event.result)
